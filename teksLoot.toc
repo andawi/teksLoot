@@ -1,4 +1,4 @@
-## Interface: 50100
+## Interface: 60000
 
 ## Title: teksLoot
 ## Notes: Minimalistic group roll frames.
@@ -8,7 +8,6 @@
 ## X-Website: http://www.tekkub.net/
 ## X-Email: tekkub-wow@googlegroups.com
 ## X-Category: Interface Enhancements
-
 ## SavedVariables: teksLootDB
 
 Locale.lua

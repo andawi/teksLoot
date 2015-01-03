@@ -1,13 +1,4 @@
-
 local myname, ns = ...
-
-
-local backdrop = {
-	bgFile = "Interface\\ChatFrame\\ChatFrameBackground", tile = true, tileSize = 16,
-	edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 16,
-	insets = {left = 4, right = 4, top = 4, bottom = 4},
-}
-
 
 local function ClickRoll(frame)
 	if IsShiftKeyDown() then ConfirmLootRoll(frame.parent.rollid, frame.rolltype)
@@ -67,8 +58,6 @@ end
 
 local function StatusUpdate(frame)
 	local t = GetLootRollTimeLeft(frame.parent.rollid)
-	local perc = t / frame.parent.time
-	frame.spark:SetPoint("CENTER", frame, "LEFT", perc * frame:GetWidth(), 0)
 	frame:SetValue(t)
 end
 
@@ -76,8 +65,8 @@ end
 local function CreateRollButton(parent, ntex, ptex, htex, rolltype, tiptext, ...)
 	local f = CreateFrame("Button", nil, parent)
 	f:SetPoint(...)
-	f:SetWidth(28)
-	f:SetHeight(28)
+	f:SetWidth(23)
+	f:SetHeight(23)
 	f:SetNormalTexture(ntex)
 	if ptex then f:SetPushedTexture(ptex) end
 	f:SetHighlightTexture(htex)
@@ -88,7 +77,8 @@ local function CreateRollButton(parent, ntex, ptex, htex, rolltype, tiptext, ...
 	f:SetScript("OnLeave", HideTip)
 	f:SetScript("OnClick", ClickRoll)
 	f:SetMotionScriptsWhileDisabled(true)
-	local txt = f:CreateFontString(nil, nil, "GameFontHighlightSmallOutline")
+	local txt = f:CreateFontString(nil, nil, nil)
+	txt:SetFont("Interface\\AddOns\\Media\\pixel.ttf", 8, "Outlinemonochrome")
 	txt:SetPoint("CENTER", 0, rolltype == 2 and 1 or rolltype == 0 and -1.2 or 0)
 	return f, txt
 end
@@ -96,77 +86,75 @@ end
 
 local function CreateRollFrame()
 	local frame = CreateFrame("Frame", nil, UIParent)
-	frame:SetWidth(328)
-	frame:SetHeight(26)
-	frame:SetBackdrop(backdrop)
-	frame:SetBackdropColor(0, 0, 0, .9)
+	frame:SetWidth(250)
+	frame:SetHeight(33)
 	frame:SetScript("OnEvent", OnEvent)
 	frame:RegisterEvent("CANCEL_LOOT_ROLL")
 	frame:Hide()
+	frame:SetBackdrop({
+    edgeFile = "Interface\\AddOns\\Media\\glowTex", edgeSize = 3,
+    bgFile = [=[Interface\ChatFrame\ChatFrameBackground]=],
+    insets = {left = 3, right = 3, top = 3, bottom = 3}})
+	frame:SetBackdropColor(.05, .05, .05, 0)
+    frame:SetBackdropBorderColor(0, 0, 0, 1)
 
 	local button = CreateFrame("Button", nil, frame)
-	button:SetPoint("LEFT", 5, 0)
-	button:SetWidth(24)
-	button:SetHeight(24)
-	button:SetNormalTexture("Interface\\Buttons\\UI-Quickslot2")
-	button:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square")
-	button:GetHighlightTexture():SetBlendMode("ADD")
+	button:SetPoint("RIGHT", frame, "LEFT", 4, 0)
+	button:SetWidth(33)
+	button:SetHeight(33)
 	button:SetScript("OnEnter", SetItemTip)
 	button:SetScript("OnLeave", HideTip2)
 	button:SetScript("OnUpdate", ItemOnUpdate)
 	button:SetScript("OnClick", LootClick)
+	button:SetBackdrop({
+	edgeFile = "Interface\\AddOns\\Media\\glowTex", edgeSize = 3,
+    bgFile = [=[Interface\ChatFrame\ChatFrameBackground]=],
+    insets = {left = 2, right = 2, top = 2, bottom = 2}})
+	button:SetBackdropColor(0, 0, 0, 0)
+	button:SetBackdropBorderColor(0, 0, 0, 1)
 	frame.button = button
-
-	local buttonborder = CreateFrame("Frame", nil, button)
-	buttonborder:SetWidth(32)
-	buttonborder:SetHeight(32)
-	buttonborder:SetPoint("CENTER", button, "CENTER")
-	buttonborder:SetBackdrop(backdrop)
-	buttonborder:SetBackdropColor(1, 1, 1, 0)
-	frame.buttonborder = buttonborder
-
-	local tfade = frame:CreateTexture(nil, "BORDER")
-	tfade:SetPoint("TOPLEFT", frame, "TOPLEFT", 4, -4)
-	tfade:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -4, 4)
-	tfade:SetTexture("Interface\\ChatFrame\\ChatFrameBackground")
-	tfade:SetBlendMode("ADD")
-	tfade:SetGradientAlpha("VERTICAL", .1, .1, .1, 0, .25, .25, .25, 1)
+	--backdrop(button)
+	
+	local icon = button:CreateTexture(nil, "OVERLAY")
+	icon:SetPoint("TOPLEFT",3,-3)
+	icon:SetPoint("BOTTOMRIGHT",-3,3)
+	icon:SetTexCoord(.08, .92, .08, .92)
+	frame.icon = icon
 
 	local status = CreateFrame("StatusBar", nil, frame)
-	status:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -4, -4)
-	status:SetPoint("BOTTOM", frame, "BOTTOM", 0, 4)
-	status:SetPoint("LEFT", frame.button, "RIGHT", -1, 0)
+	status:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -3, -3)
+	status:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 3, 3)
 	status:SetScript("OnUpdate", StatusUpdate)
 	status:SetFrameLevel(status:GetFrameLevel()-1)
-	status:SetStatusBarTexture("Interface\\AddOns\\teksLoot\\DarkBottom.tga")
-	status:SetStatusBarColor(.8, .8, .8, .9)
+	status:SetStatusBarTexture("Interface\\AddOns\\Media\\texture")
+	status:SetStatusBarColor(0, 1, 0, .5)
 	status.parent = frame
 	frame.status = status
+	
+	local bg = status:CreateTexture(nil, "BACKGROUND")
+    bg:SetAllPoints(status)
+    bg:SetTexture("Interface\\AddOns\\Media\\texture")
+	bg:SetVertexColor(0, 0, 0, .7)
+	frame.bg = bg
 
-	local spark = frame:CreateTexture(nil, "OVERLAY")
-	spark:SetWidth(14)
-	spark:SetHeight(35)
-	spark:SetTexture("Interface\\CastingBar\\UI-CastingBar-Spark")
-	spark:SetBlendMode("ADD")
-	status.spark = spark
-
-	local need, needtext = CreateRollButton(frame, "Interface\\Buttons\\UI-GroupLoot-Dice-Up", "Interface\\Buttons\\UI-GroupLoot-Dice-Highlight", "Interface\\Buttons\\UI-GroupLoot-Dice-Down", 1, NEED, "LEFT", frame.button, "RIGHT", 5, -1)
-	local greed, greedtext = CreateRollButton(frame, "Interface\\Buttons\\UI-GroupLoot-Coin-Up", "Interface\\Buttons\\UI-GroupLoot-Coin-Highlight", "Interface\\Buttons\\UI-GroupLoot-Coin-Down", 2, GREED, "LEFT", need, "RIGHT", 0, -1)
+	local need, needtext = CreateRollButton(frame, "Interface\\Buttons\\UI-GroupLoot-Dice-Up", "Interface\\Buttons\\UI-GroupLoot-Dice-Highlight", "Interface\\Buttons\\UI-GroupLoot-Dice-Down", 1, NEED, "LEFT", frame.button, "RIGHT", 5, -2)
+	local greed, greedtext = CreateRollButton(frame, "Interface\\Buttons\\UI-GroupLoot-Coin-Up", "Interface\\Buttons\\UI-GroupLoot-Coin-Highlight", "Interface\\Buttons\\UI-GroupLoot-Coin-Down", 2, GREED, "LEFT", need, "RIGHT", 0, 0)
 	local de, detext
-	de, detext = CreateRollButton(frame, "Interface\\Buttons\\UI-GroupLoot-DE-Up", "Interface\\Buttons\\UI-GroupLoot-DE-Highlight", "Interface\\Buttons\\UI-GroupLoot-DE-Down", 3, ROLL_DISENCHANT, "LEFT", greed, "RIGHT", 0, -1)
+	de, detext = CreateRollButton(frame, "Interface\\Buttons\\UI-GroupLoot-DE-Up", "Interface\\Buttons\\UI-GroupLoot-DE-Highlight", "Interface\\Buttons\\UI-GroupLoot-DE-Down", 3, ROLL_DISENCHANT, "LEFT", greed, "RIGHT", 0, 0)
 	local pass, passtext = CreateRollButton(frame, "Interface\\Buttons\\UI-GroupLoot-Pass-Up", nil, "Interface\\Buttons\\UI-GroupLoot-Pass-Down", 0, PASS, "LEFT", de or greed, "RIGHT", 0, 2.2)
 	frame.needbutt, frame.greedbutt, frame.disenchantbutt = need, greed, de
 	frame.need, frame.greed, frame.pass, frame.disenchant = needtext, greedtext, passtext, detext
 
 	local bind = frame:CreateFontString()
-	bind:SetPoint("LEFT", pass, "RIGHT", 3, 1)
-	bind:SetFont("Fonts\\FRIZQT__.TTF", 13, "THICKOUTLINE")
+	bind:SetPoint("LEFT", pass, "RIGHT", 5, 0)
+	bind:SetFont("Interface\\AddOns\\Media\\pixel.ttf", 8, "Outlinemonochrome")
 	frame.fsbind = bind
 
-	local loot = frame:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+	local loot = frame:CreateFontString(nil, "ARTWORK", nil)
+	loot:SetFont("Interface\\AddOns\\Media\\pixel.ttf", 8, "Outlinemonochrome")
 	loot:SetPoint("LEFT", bind, "RIGHT", 0, .12)
 	loot:SetPoint("RIGHT", frame, "RIGHT", -5, 0)
-	loot:SetHeight(16)
+	loot:SetTextColor(1, 1, 1)
 	loot:SetJustifyH("LEFT")
 	frame.fsloot = loot
 
@@ -178,11 +166,11 @@ end
 
 local anchor = CreateFrame("Button", nil, UIParent)
 anchor:SetWidth(300) anchor:SetHeight(22)
-anchor:SetBackdrop(backdrop)
 anchor:SetBackdropColor(0.25, 0.25, 0.25, 1)
 local label = anchor:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
 label:SetAllPoints(anchor)
 label:SetText("teksLoot")
+backdrop(anchor)
 
 anchor:SetScript("OnClick", anchor.Hide)
 anchor:SetScript("OnDragStart", anchor.StartMoving)
@@ -199,7 +187,7 @@ anchor:Hide()
 local frames = {}
 
 local f = CreateRollFrame() -- Create one for good measure
-f:SetPoint("TOPLEFT", next(frames) and frames[#frames] or anchor, "BOTTOMLEFT", 0, -4)
+f:SetPoint("TOPLEFT", next(frames) and frames[#frames] or anchor, "BOTTOMLEFT", 0, 0)
 table.insert(frames, f)
 
 local function GetFrame()
@@ -208,7 +196,7 @@ local function GetFrame()
 	end
 
 	local f = CreateRollFrame()
-	f:SetPoint("TOPLEFT", next(frames) and frames[#frames] or anchor, "BOTTOMLEFT", 0, -4)
+	f:SetPoint("TOPLEFT", next(frames) and frames[#frames] or anchor, "BOTTOMLEFT", 0, 0)
 	table.insert(frames, f)
 	return f
 end
@@ -253,7 +241,7 @@ local function START_LOOT_ROLL(rollid, time)
 	f.disenchant:SetText(0)
 
 	local texture, name, count, quality, bop, canNeed, canGreed, canDisenchant, reasonNeed, reasonGreed, reasonDisenchant, deSkillRequired = GetLootRollItemInfo(rollid)
-	f.button:SetNormalTexture(texture)
+	f.icon:SetTexture(texture)
 	f.button.link = GetLootRollItemLink(rollid)
 
 	if canNeed then
@@ -293,12 +281,11 @@ local function START_LOOT_ROLL(rollid, time)
 	f.fsbind:SetVertexColor(bop and 1 or .3, bop and .3 or 1, bop and .1 or .3)
 
 	local color = ITEM_QUALITY_COLORS[quality]
-	f.fsloot:SetVertexColor(color.r, color.g, color.b)
+
 	f.fsloot:SetText(name)
 
-	f:SetBackdropBorderColor(color.r, color.g, color.b, 1)
-	f.buttonborder:SetBackdropBorderColor(color.r, color.g, color.b, 1)
-	f.status:SetStatusBarColor(color.r, color.g, color.b, .7)
+	f.status:SetStatusBarColor(color.r, color.g, color.b, 0.7)
+	--f.button:SetBackdropColor(color.r, color.g, color.b)
 
 	f.status:SetMinMaxValues(0, time)
 	f.status:SetValue(time)
@@ -332,10 +319,9 @@ anchor:SetScript("OnEvent", function(frame, event, addon)
 
 	if not teksLootDB then teksLootDB = {} end
 	anchor.db = teksLootDB
-	anchor:SetPoint("CENTER", UIParent, anchor.db.x and "BOTTOMLEFT" or "BOTTOM", anchor.db.x or 0, anchor.db.y or 221)
+	anchor:SetPoint("CENTER", UIParent, anchor.db.x and "BOTTOMLEFT" or "CENTER", anchor.db.x or 0, anchor.db.y or 250)
 end)
 
 
 SlashCmdList["TEKSLOOT"] = function() if anchor:IsVisible() then anchor:Hide() else anchor:Show() end end
 SLASH_TEKSLOOT1 = "/teksloot"
-
