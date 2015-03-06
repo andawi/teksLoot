@@ -114,7 +114,7 @@ local function CreateRollFrame()
 	button:SetBackdropBorderColor(0, 0, 0, 1)
 	frame.button = button
 	--backdrop(button)
-	
+
 	local icon = button:CreateTexture(nil, "OVERLAY")
 	icon:SetPoint("TOPLEFT",3,-3)
 	icon:SetPoint("BOTTOMRIGHT",-3,3)
@@ -130,7 +130,7 @@ local function CreateRollFrame()
 	status:SetStatusBarColor(0, 1, 0, .5)
 	status.parent = frame
 	frame.status = status
-	
+
 	local bg = status:CreateTexture(nil, "BACKGROUND")
     bg:SetAllPoints(status)
     bg:SetTexture("Interface\\AddOns\\Media\\texture")
@@ -170,7 +170,7 @@ anchor:SetBackdropColor(0.25, 0.25, 0.25, 1)
 local label = anchor:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
 label:SetAllPoints(anchor)
 label:SetText("teksLoot")
-backdrop(anchor)
+--backdrop(anchor)
 
 anchor:SetScript("OnClick", anchor.Hide)
 anchor:SetScript("OnDragStart", anchor.StartMoving)
